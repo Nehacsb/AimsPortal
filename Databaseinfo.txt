@@ -1,0 +1,32 @@
+CREATE TABLE students (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  email VARCHAR(100) UNIQUE NOT NULL,
+  department_id INT NOT NULL,
+  FOREIGN KEY (department_id) REFERENCES departments(id)
+);
+CREATE TABLE courses (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  course_code VARCHAR(10) UNIQUE NOT NULL,
+  course_title VARCHAR(100) NOT NULL,
+  credits INT NOT NULL,
+  department_id INT NOT NULL,
+  session VARCHAR(20) NOT NULL,
+  FOREIGN KEY (department_id) REFERENCES departments(id)
+);
+CREATE TABLE departments (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) UNIQUE NOT NULL
+);
+CREATE TABLE enrollments (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  student_id INT NOT NULL,
+  course_id INT NOT NULL,
+  status ENUM('Pending Approval', 'Approved', 'Rejected') DEFAULT 'Pending Approval',
+  request_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (student_id) REFERENCES students(id),
+  FOREIGN KEY (course_id) REFERENCES courses(id)
+);
+
+use aims_db;
+
