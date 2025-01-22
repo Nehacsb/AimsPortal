@@ -1,3 +1,17 @@
+CREATE TABLE departments (
+  department_id INT AUTO_INCREMENT PRIMARY KEY,
+  department_name VARCHAR(100) UNIQUE NOT NULL
+);
+INSERT INTO departments (department_name) 
+VALUES 
+('Computer Science'),
+('Electrical'),
+('Mechanical'),
+('Chemistry'),
+('Human Resources')
+('Mathematics'),
+('Physics');
+
 CREATE TABLE students (
   student_id varchar(100)  PRIMARY KEY,
   student_name VARCHAR(100) NOT NULL,
@@ -5,6 +19,14 @@ CREATE TABLE students (
   department_id INT NOT NULL,
   FOREIGN KEY (department_id) REFERENCES departments(department_id)
 );
+INSERT INTO students (student_id, student_name, email, department_id)
+VALUES
+('2022CSB1096', 'Neha Dahire', '2022CSB1096@iitrpr.ac.in', 1),
+('2022CSB1319', 'Jyoti', '2022CSB1319@iitrpr.ac.in', 1),
+('2022CSB1117', 'Sai Pranav', '2022CSB1117@iitrpr.ac.in', 1),
+('2022CSB1119', 'Sanat Gupta', '2022CSB1119@iitrpr.ac.in', 1),
+('2022CSB1789', 'Joe', '2022CSB1789@iitrpr.ac.in', 2);
+
 CREATE TABLE courses (
   course_code VARCHAR(100)  PRIMARY KEY,
   course_title VARCHAR(100) NOT NULL,
@@ -13,10 +35,15 @@ CREATE TABLE courses (
   session VARCHAR(20) NOT NULL,
   FOREIGN KEY (department_id) REFERENCES departments(department_id)
 );
-CREATE TABLE departments (
-  department_id INT AUTO_INCREMENT PRIMARY KEY,
-  department_name VARCHAR(100) UNIQUE NOT NULL
-);
+
+INSERT INTO courses (course_code, course_title, credits, department_id, session)
+VALUES
+('CP301', 'Development Engineering Project', 3, 1, '2025-I'),
+('CY101', 'General Chemistry', 3, 4, '2025-I'),
+('EE101', 'Intro to Electrical', 3, 2, '2025-I'),
+('PY101', 'Introduction to Physics', 4, 7, '2025-I'),
+
+
 CREATE TABLE enrollments (
   enrollment_id INT AUTO_INCREMENT PRIMARY KEY,
   student_id varchar(100) NOT NULL,
