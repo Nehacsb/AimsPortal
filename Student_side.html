@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AIMS Portal - Dashboard</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="navbar">
+    <h1>AIMS Portal</h1>
+    <nav>
+      <a href="#">Dashboard</a>
+      <a href="#">Profile</a>
+      <a href="#">Logout</a>
+    </nav>
+  </header>
+
+  <main class="dashboard-container">
+    <h2>Offered Courses</h2>
+    <div class="filters">
+      <select id="department-filter">
+        <option selected disabled>Department</option>
+        <!-- Dynamically populated via API -->
+      </select>
+      <input id="course-code-filter" type="text" placeholder="Course Code" />
+      <input id="course-title-filter" type="text" placeholder="Course Title" />
+      <button class="search-btn" onclick="fetchCourses()">Search</button>
+    </div>
+
+    <!-- Results Box -->
+    <div class="results">
+      <!-- This will be dynamically populated with course search results -->
+    </div>
+
+  </main>
+
+  <footer>
+    <p>&copy; 2025 AIMS Portal</p>
+  </footer>
+  <script src="script.js"></script>
+</body>
+</html>
