@@ -1,0 +1,94 @@
+/* General styling */
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f4f4f9;
+}
+.wrapper {
+  display: flex;
+  flex-direction:column;
+  min-height: 100vh; 
+  /* Ensures the wrapper takes full height of the viewport */
+}
+footer{
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background-color: #2c3e50;
+  color: white;
+  text-align: center;
+  padding: 10px 20px;
+}
+header.navbar {
+  background-color: #2c3e50;
+  color: white;
+  padding: 10px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+header.navbar h1 {
+  margin: 0;
+}
+
+header.navbar nav a {
+  margin-left: 20px;
+  color: white;
+  text-decoration: none;
+}
+
+.login-container {
+  padding: 20px;
+  max-width: 900px;
+  margin: 30px auto;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+.dashboard-container {
+  padding: 20px;
+  
+  margin: 10px 10px 10px 10px;
+  background: white;
+  border-radius: 8px;
+  box-shadow:0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+form label, .filters select, .filters input, .filters button {
+  display: block;
+  margin-bottom: 10px;
+}
+
+.filters {
+  display: flex;
+  gap: 10px;
+  border-radius: 10px;
+}
+
+.result-card {
+  border: 1px solid #ddd;
+  padding: 15px;
+  margin-bottom: 10px;
+  border-radius: 4px;
+  background: #fff;
+}
+
+button {
+  background-color: #3498db;
+  color: black;
+  border: none;
+  padding: 10px 15px 10px 15px;
+  cursor: pointer;
+  border-radius: 10px;
+}
+
+.enroll_button{
+  background-color: #3498db;
+  color: black;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  border-radius: 10px;
+}
