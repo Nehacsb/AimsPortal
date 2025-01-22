@@ -23,6 +23,8 @@ then enrolled else pending faculty approval
 <br>
 
 #### Run
+in terminal : npm install
+<br> 
 node server.js to start the server
 then open the respective html 
 
