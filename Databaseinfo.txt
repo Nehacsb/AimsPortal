@@ -1,32 +1,34 @@
 CREATE TABLE students (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  name VARCHAR(100) NOT NULL,
+  student_id varchar(100)  PRIMARY KEY,
+  student_name VARCHAR(100) NOT NULL,
   email VARCHAR(100) UNIQUE NOT NULL,
   department_id INT NOT NULL,
-  FOREIGN KEY (department_id) REFERENCES departments(id)
+  FOREIGN KEY (department_id) REFERENCES departments(department_id)
 );
 CREATE TABLE courses (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  course_code VARCHAR(10) UNIQUE NOT NULL,
+  course_code VARCHAR(100)  PRIMARY KEY,
   course_title VARCHAR(100) NOT NULL,
   credits INT NOT NULL,
   department_id INT NOT NULL,
   session VARCHAR(20) NOT NULL,
-  FOREIGN KEY (department_id) REFERENCES departments(id)
+  FOREIGN KEY (department_id) REFERENCES departments(department_id)
 );
 CREATE TABLE departments (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  name VARCHAR(100) UNIQUE NOT NULL
+  department_id INT AUTO_INCREMENT PRIMARY KEY,
+  department_name VARCHAR(100) UNIQUE NOT NULL
 );
 CREATE TABLE enrollments (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  student_id INT NOT NULL,
-  course_id INT NOT NULL,
+  enrollment_id INT AUTO_INCREMENT PRIMARY KEY,
+  student_id varchar(100) NOT NULL,
+  course_code varchar(100) NOT NULL,
   status ENUM('Pending Approval', 'Approved', 'Rejected') DEFAULT 'Pending Approval',
   request_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (student_id) REFERENCES students(id),
-  FOREIGN KEY (course_id) REFERENCES courses(id)
+  FOREIGN KEY (student_id) REFERENCES students(student_id),
+  FOREIGN KEY (course_id) REFERENCES courses(course_code)
 );
 
 use aims_db;
+select * from coursescoursescoursesdepartments
+
+select * from enrollments
 
