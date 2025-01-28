@@ -1,6 +1,21 @@
+
 document.addEventListener('DOMContentLoaded', () => {
   const departmentSelect = document.querySelector('#department-filter');
-  const searchButton = document.querySelector('.search-btn');
+  const navLinks = document.querySelectorAll('.nav-link');
+
+  // Handle section switching
+  navLinks.forEach(link => {
+    link.addEventListener('click', event => {
+      event.preventDefault();
+      const sectionId = event.target.dataset.section;
+
+      // Hide all sections and show the selected one
+      document.querySelectorAll('.section').forEach(section => {
+        section.style.display = 'none';
+      });
+      document.getElementById(`${sectionId}-section`).style.display = 'block';
+    });
+  });
 
   // Fetch departments from the API
   fetch('http://localhost:3000/api/departments')
@@ -19,24 +34,24 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
   // Add event listener to the search button
-  searchButton.addEventListener('click', fetchCourses);
+  document.querySelector('.search-btn').addEventListener('click', fetchCourses);
 });
 
-// Fetch courses based on filters
+
+
+
 function fetchCourses() {
   const department = document.getElementById('department-filter').value;
   const courseCode = document.getElementById('course-code-filter').value;
   const courseTitle = document.getElementById('course-title-filter').value;
 
-  // URL encode the parameters
   const departmentEncoded = encodeURIComponent(department);
   const courseCodeEncoded = encodeURIComponent(courseCode);
   const courseTitleEncoded = encodeURIComponent(courseTitle);
 
-  // Construct the full URL with the base URL (http://localhost:3000)
   const url = `http://localhost:3000/api/courses?department_id=${departmentEncoded}&courseCode=${courseCodeEncoded}&courseTitle=${courseTitleEncoded}`;
 
-  console.log("Fetching URL:", url);  // Log the URL being used for the request
+  console.log("Fetching URL:", url);
 
   fetch(url)
     .then(response => {
@@ -52,15 +67,28 @@ function fetchCourses() {
       const resultsSection = document.querySelector('.results');
       resultsSection.innerHTML = ''; // Clear previous results
 
+      // courses.forEach(course => {
+      //   const courseCard = document.createElement('div');
+      //   courseCard.classList.add('result-card');
+      //   courseCard.innerHTML = `
+      //       <h4>${course.course_code} | ${course.course_title}</h4>
+      //       <p><strong>Instructor:</strong> ${course.instructor_name || 'TBA'}</p>
+      //       <p><strong>Credits:</strong> ${course.credits}</p>
+      //       <p><strong>Session:</strong> ${course.session}</p>
+      //       <button class="enroll_button" onclick="enroll('${course.course_code}')">Request Enroll</button>
+      //     `;
+      //   resultsSection.appendChild(courseCard);
+      // });
       courses.forEach(course => {
         const courseCard = document.createElement('div');
         courseCard.classList.add('result-card');
         courseCard.innerHTML = `
-            <h4>${course.course_code} | ${course.course_title}</h4>
+            <h4 onclick="viewEnrollments('${course.course_code}')">${course.course_code} | ${course.course_title}</h4>
+            <p><strong>Instructor:</strong> ${course.instructor_name || 'TBA'}</p>
             <p><strong>Credits:</strong> ${course.credits}</p>
             <p><strong>Session:</strong> ${course.session}</p>
-            <button class="enroll_button" onclick="enroll('${course.id}')">Request Enroll</button>
-          `;
+            <button class="enroll_button" onclick="enroll('${course.course_code}', '${course.sec_id}')">Request Enroll</button>
+        `;
         resultsSection.appendChild(courseCard);
       });
     })
@@ -69,38 +97,126 @@ function fetchCourses() {
     });
 }
 
+// Hardcoded current student ID
+const CURRENT_STUDENT_ID = '2022CVB1005';
+function enroll(courseCode) {
+  const payload = {
+    student_id: CURRENT_STUDENT_ID,
+    course_code: courseCode,
+  };
 
-// Send enrollment request
-function enroll(courseId) {
-  fetch('/api/enroll', {
+  fetch('http://localhost:3000/api/enroll', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ courseId, studentId: '2022CSB1096' }) // Replace with actual student ID
+    body: JSON.stringify(payload),
   })
     .then(response => response.json())
     .then(data => {
-      alert(data.message); // Show success message
-      fetchEnrolledCourses(); // Refresh enrolled courses
+      if (data.message) {
+        alert(data.message);
+        const enrollButton = document.querySelector(`button[data-course="${courseCode}"]`);
+        if (enrollButton) {
+          enrollButton.style.display = 'none';
+        }
+      } else if (data.error) {
+        alert(`Error: ${data.error}`);
+      }
     })
-    .catch(err => console.error('Error enrolling:', err));
+    .catch(err => {
+      console.error('Error submitting enrollment request:', err);
+      alert('Network error. Please try again.');
+    });
 }
 
-// // Fetch enrolled courses for the student
-// function fetchEnrolledCourses() {
-//   fetch('/api/enrolled-courses?studentId=2022CSB1096') // Replace with actual student ID
-//     .then(response => response.json())
-//     .then(courses => {
-//       const enrolledCoursesDiv = document.getElementById('enrolled-courses');
-//       enrolledCoursesDiv.innerHTML = ''; // Clear previous entries
+// function enroll(courseCode) {
+//   const payload = {
+//     student_id: CURRENT_STUDENT_ID,
+//     course_code: courseCode,
+//   };
 
-//       courses.forEach(course => {
-//         const courseDiv = document.createElement('div');
-//         courseDiv.innerHTML = `
-//           <h4>${course.code} | ${course.title}</h4>
-//           <p><strong>Status:</strong> ${course.status}</p>
-//         `;
-//         enrolledCoursesDiv.appendChild(courseDiv);
-//       });
+//   fetch('http://localhost:3000/api/enroll', {
+//     method: 'POST',
+//     headers: { 'Content-Type': 'application/json' },
+//     body: JSON.stringify(payload),
+//   })
+//     .then(response => response.json())
+//     .then(data => {
+//       if (data.message) {
+//         alert(data.message);
+
+//         // Hide the "Enroll" button
+//         const enrollButton = document.querySelector(`button[data-course="${courseCode}"]`);
+//         if (enrollButton) {
+//           enrollButton.style.display = 'none';
+//         }
+//       } else if (data.error) {
+//         alert(`Error: ${data.error}`);
+//       }
 //     })
-//     .catch(err => console.error('Error fetching enrolled courses:', err));
+//     .catch(err => {
+//       console.error('Error submitting enrollment request:', err);
+//     });
 // }
+
+
+// Fetch and display enrollments for a course
+function viewEnrollments(courseCode) {
+  fetch(`http://localhost:3000/api/enrollments?course_code=${courseCode}`)
+    .then(response => response.json())
+    .then(enrollments => {
+      const resultsSection = document.querySelector('.results');
+      resultsSection.innerHTML = ''; // Clear previous results
+
+      const enrollmentsTable = document.createElement('table');
+      enrollmentsTable.innerHTML = `
+                <thead>
+                    <tr>
+                        <th>Enrollment ID</th>
+                        <th>Student ID</th>
+                        <th>Student Name</th>
+                        <th>Section</th>
+                        <th>Semester</th>
+                        <th>Year</th>
+                        <th>Status</th>
+                        <th>Request Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${enrollments
+          .map(e => `
+                            <tr>
+                                <td>${e.enrollment_id}</td>
+                                <td>${e.student_id}</td>
+                                <td>${e.student_name}</td>
+                                <td>${e.sec_id}</td>
+                                <td>${e.semester}</td>
+                                <td>${e.year}</td>
+                                <td>${e.status}</td>
+                                <td>${new Date(e.request_date).toLocaleString()}</td>
+                            </tr>
+                        `)
+          .join('')}
+                </tbody>
+            `;
+
+      resultsSection.appendChild(enrollmentsTable);
+    })
+    .catch(err => {
+      console.error('Error fetching enrollments:', err);
+    });
+}
+
+function updateProfile() {
+  const nameInput = document.getElementById('update-name').value;
+  const emailInput = document.getElementById('update-email').value;
+
+  // Update profile information
+  if (nameInput) document.getElementById('profile-name').textContent = nameInput;
+  if (emailInput) document.getElementById('profile-email').textContent = emailInput;
+
+  // Clear input fields
+  document.getElementById('update-name').value = '';
+  document.getElementById('update-email').value = '';
+
+  alert('Profile updated successfully!');
+}

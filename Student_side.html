@@ -8,15 +8,37 @@
 </head>
 <body>
   <header class="navbar">
-    <h1>AIMS Portal</h1>
+    <div >Aims</div>
     <nav>
-      <a href="#">Dashboard</a>
-      <a href="#">Profile</a>
-      <a href="#">Logout</a>
+      <a href="#dashboard" data-section="dashboard" class="nav-link">Dashboard</a>
+      <a href="#courses" data-section="courses" class="nav-link">Courses</a>
+      <a href="#StudentRecord" data-section="profile" class="nav-link">Student Record</a>
+      <a href="#logout" data-section="logout" class="nav-link">Logout</a>
     </nav>
   </header>
 
-  <main class="dashboard-container">
+  <!-- Dashboard Section -->
+    <main id="dashboard-section" class="section">
+      <h2>Academic Information Management System.</h2>
+      
+      <p class="warning">
+        Please DO NOT edit or manipulate the URLs or requests when using this application. Doing so may lock your account.
+      </p>
+      
+      <p>
+        Please proceed by choosing a menu item from the top bar.
+        Before contacting @aims_help for any issues, please check the User Guide for a solution.
+      </p>
+      
+      <ul>
+        <li>Please directly contact the course instructor for any changes to your enrolment requests.</li>
+        <li>We have not yet fully imported your past enrolments data into this system. You may not get to see grades for some of your past courses.</li>
+      </ul>
+    </main>
+ 
+
+  <!-- Offered Courses Section -->
+  <main id="courses-section" class="section" style="display: none;">
     <h2>Offered Courses</h2>
     <div class="filters">
       <select id="department-filter">
@@ -30,9 +52,26 @@
 
     <!-- Results Box -->
     <div class="results">
-      <!-- This will be dynamically populated with course search results -->
+      <!-- Dynamically populated with course search results -->
     </div>
+  </main>
 
+  <!-- Profile Section -->
+  <main id="profile-section" class="section" style="display: none;">
+    <h2>Your Profile</h2>
+    <div class="profile-info">
+      <p><strong>Name:</strong> <span id="profile-name">John Doe</span></p>
+      <p><strong>Email:</strong> <span id="profile-email">john.doe@example.com</span></p>
+      <p><strong>Student ID:</strong> <span id="profile-id">2022CSB1096</span></p>
+    </div>
+    <h3>Update Profile</h3>
+    <form id="profile-form">
+      <label for="update-name">Name:</label>
+      <input type="text" id="update-name" placeholder="Enter your name" />
+      <label for="update-email">Email:</label>
+      <input type="email" id="update-email" placeholder="Enter your email" />
+      <button type="button" onclick="updateProfile()">Update</button>
+    </form>
   </main>
 
   <footer>

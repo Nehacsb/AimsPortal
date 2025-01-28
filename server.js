@@ -42,12 +42,12 @@ app.get('/api/departments', (req, res) => {
     });
 });
 
-//search pupose Fetch Filtered Courses:
+
+
 app.get('/api/courses', (req, res) => {
     const { department_id, courseCode, courseTitle } = req.query;
 
-    // Get the department ID based on the department name if department_name is provided
-    const departmentName = department_id;  // department_id is actually the department name now
+    const departmentName = department_id; // department_id is actually the department name now
     let departmentId = null;
 
     // Get the department_id if department_name is provided
@@ -55,26 +55,28 @@ app.get('/api/courses', (req, res) => {
 
     db.query(departmentQuery, [departmentName], (err, results) => {
         if (err) return res.status(500).json({ error: err.message });
-        
+
         if (results.length === 0) {
             return res.status(404).json({ error: 'Department not found' });
         }
-        
+
         departmentId = results[0].department_id; // Get department_id
-        
-        // Now build the query to filter courses by department_id
+
+        // Query to fetch courses along with instructor names
         const query = `
-          SELECT * FROM courses
-          WHERE (department_id = ? OR ? IS NULL)
-            AND (course_code LIKE ? OR ? IS NULL)
-            AND (course_title LIKE ? OR ? IS NULL)
+          SELECT c.*, i.instructor_name
+          FROM courses c
+          LEFT JOIN teaches t ON c.course_code = t.course_code
+          LEFT JOIN instructors i ON t.instructor_id = i.instructor_id
+          WHERE (c.department_id = ? OR ? IS NULL)
+            AND (c.course_code LIKE ? OR ? IS NULL)
+            AND (c.course_title LIKE ? OR ? IS NULL)
         `;
 
         const params = [
             departmentId, departmentId, `%${courseCode}%`, courseCode, `%${courseTitle}%`, courseTitle
         ];
 
-        // Execute the query
         db.query(query, params, (err, courses) => {
             if (err) return res.status(500).json({ error: err.message });
             res.json(courses);
@@ -82,34 +84,78 @@ app.get('/api/courses', (req, res) => {
     });
 });
 
+// Constants for current session
+// const CURRENT_SEMESTER = 'Fall';
+// const CURRENT_YEAR = 2024;
 
-
-
-//enroll request
 app.post('/api/enroll', (req, res) => {
-    const { courseId, studentId } = req.body;
-    const query = `INSERT INTO enrollments (student_id, course_id, status) VALUES (?, ?, 'Pending Approval')`;
+    const { student_id, course_code } = req.body;
 
-    db.query(query, [studentId, courseId], (err) => {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json({ message: 'Enrollment request submitted!' });
-    });
-});
-// Fetch Enrolled Courses:
-app.get('/api/enrolled-courses', (req, res) => {
-    const { studentId } = req.query;
-    const query = `
-      SELECT c.course_code AS code, c.course_title AS title, e.status
-      FROM enrollments e
-      JOIN courses c ON e.course_id = c.id
-      WHERE e.student_id = ?
+    const CURRENT_SEMESTER = 'Winter';
+    const CURRENT_YEAR = 2025;
+
+    console.log('Request body:', req.body);
+
+    const getSecIdQuery = `
+        SELECT sec_id 
+        FROM sections 
+        WHERE course_code = ? AND semester = ? AND year = ?
     `;
 
-    db.query(query, [studentId], (err, results) => {
+    db.query(getSecIdQuery, [course_code, CURRENT_SEMESTER, CURRENT_YEAR], (err, results) => {
+        if (err) {
+            console.error('Error fetching sec_id:', err);
+            return res.status(500).json({ error: 'Internal Server Error' });
+        }
+
+        if (results.length === 0) {
+            console.log('No section found for the course');
+            return res.status(404).json({ error: 'No section found for the course in the current session' });
+        }
+
+        const sec_id = results[0].sec_id;
+        console.log('sec_id:', sec_id);
+
+        const insertEnrollmentQuery = `
+            INSERT INTO enrollments (student_id, course_code, sec_id, semester, year, status)
+            VALUES (?, ?, ?, ?, ?, 'Pending Approval')
+        `;
+
+        db.query(insertEnrollmentQuery, [student_id, course_code, sec_id, CURRENT_SEMESTER, CURRENT_YEAR], (err, result) => {
+            if (err) {
+                console.error('Error inserting enrollment:', err);
+                if (err.code === 'ER_NO_REFERENCED_ROW') {
+                    return res.status(400).json({ error: 'Invalid student_id or course_code' });
+                } else if (err.code === 'ER_DUP_ENTRY') {
+                    return res.status(400).json({ error: 'Duplicate enrollment request' });
+                }
+                return res.status(500).json({ error: 'Internal Server Error' });
+            }
+
+            console.log('Enrollment successful:', result);
+            res.json({ message: 'Enrollment request submitted successfully!', enrollmentId: result.insertId });
+        });
+    });
+});
+
+  
+// Endpoint to fetch enrollments for a course
+app.get('/api/enrollments', (req, res) => {
+    const { course_code } = req.query;
+
+    const query = `
+        SELECT e.enrollment_id, e.student_id, s.student_name, e.sec_id, e.semester, e.year, e.status, e.request_date
+        FROM enrollments e
+        JOIN students s ON e.student_id = s.student_id
+        WHERE e.course_code = ?
+    `;
+
+    db.query(query, [course_code], (err, results) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(results);
     });
 });
+
 
 // Start the server
 app.listen(PORT, () => {

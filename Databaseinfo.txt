@@ -1,61 +1,184 @@
+use aims_db;
+
+-- Table for Departments
 CREATE TABLE departments (
   department_id INT AUTO_INCREMENT PRIMARY KEY,
   department_name VARCHAR(100) UNIQUE NOT NULL
 );
-INSERT INTO departments (department_name) 
-VALUES 
-('Computer Science'),
-('Electrical'),
-('Mechanical'),
-('Chemistry'),
-('Human Resources')
-('Mathematics'),
-('Physics');
 
+-- Table for Students
 CREATE TABLE students (
-  student_id varchar(100)  PRIMARY KEY,
+  student_id VARCHAR(100) PRIMARY KEY,
   student_name VARCHAR(100) NOT NULL,
   email VARCHAR(100) UNIQUE NOT NULL,
   department_id INT NOT NULL,
   FOREIGN KEY (department_id) REFERENCES departments(department_id)
 );
-INSERT INTO students (student_id, student_name, email, department_id)
-VALUES
-('2022CSB1096', 'Neha Dahire', '2022CSB1096@iitrpr.ac.in', 1),
-('2022CSB1319', 'Jyoti', '2022CSB1319@iitrpr.ac.in', 1),
-('2022CSB1117', 'Sai Pranav', '2022CSB1117@iitrpr.ac.in', 1),
-('2022CSB1119', 'Sanat Gupta', '2022CSB1119@iitrpr.ac.in', 1),
-('2022CSB1789', 'Joe', '2022CSB1789@iitrpr.ac.in', 2);
 
+-- Table for Instructors
+CREATE TABLE instructors (
+  instructor_id INT AUTO_INCREMENT PRIMARY KEY,
+  instructor_name VARCHAR(100) NOT NULL,
+  department_id INT NOT NULL,
+  FOREIGN KEY (department_id) REFERENCES departments(department_id)
+);
+
+-- Table for Courses
 CREATE TABLE courses (
-  course_code VARCHAR(100)  PRIMARY KEY,
+  course_code VARCHAR(100) PRIMARY KEY,
   course_title VARCHAR(100) NOT NULL,
   credits INT NOT NULL,
   department_id INT NOT NULL,
   session VARCHAR(20) NOT NULL,
-  FOREIGN KEY (department_id) REFERENCES departments(department_id)
+  instructor_id INT,
+  FOREIGN KEY (department_id) REFERENCES departments(department_id),
+  FOREIGN KEY (instructor_id) REFERENCES instructors(instructor_id)
 );
 
-INSERT INTO courses (course_code, course_title, credits, department_id, session)
-VALUES
-('CP301', 'Development Engineering Project', 3, 1, '2025-I'),
-('CY101', 'General Chemistry', 3, 4, '2025-I'),
-('EE101', 'Intro to Electrical', 3, 2, '2025-I'),
-('PY101', 'Introduction to Physics', 4, 7, '2025-I'),
 
+
+-- Table for Sections
+CREATE TABLE sections (
+  course_code VARCHAR(100),
+  sec_id INT,
+  semester VARCHAR(10),
+  year INT,
+  PRIMARY KEY (course_code, sec_id, semester, year),
+  FOREIGN KEY (course_code) REFERENCES courses(course_code)
+);
+
+-- Ensure indexes exist in students and courses
+ALTER TABLE students ADD INDEX (student_id); -- Adds an index on student_id
+ALTER TABLE courses ADD INDEX (course_code); -- Adds an index on course_code
+ALTER TABLE sections ADD INDEX (sec_id); -- Adds an index on course_code
+ALTER TABLE sections ADD INDEX (year);
+ALTER TABLE sections ADD INDEX (semester);
+
+-- Create the enrollments table
+DROP TABLE IF EXISTS enrollments;
 
 CREATE TABLE enrollments (
   enrollment_id INT AUTO_INCREMENT PRIMARY KEY,
-  student_id varchar(100) NOT NULL,
-  course_code varchar(100) NOT NULL,
+  student_id VARCHAR(100) NOT NULL,
+  course_code VARCHAR(100) NOT NULL,
+  sec_id INT NOT NULL,
+  semester VARCHAR(10) NOT NULL,
+  year INT NOT NULL,
   status ENUM('Pending Approval', 'Approved', 'Rejected') DEFAULT 'Pending Approval',
   request_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (student_id) REFERENCES students(student_id),
-  FOREIGN KEY (course_id) REFERENCES courses(course_code)
+  FOREIGN KEY (course_code) REFERENCES courses(course_code),
+  FOREIGN KEY (course_code, sec_id, semester, year) REFERENCES sections(course_code, sec_id, semester, year)
 );
 
+
+
+
+-- Table for Teaches (Instructor-course association)
+CREATE TABLE teaches (
+  instructor_id INT,
+  course_code VARCHAR(100),
+  sec_id INT,
+  semester VARCHAR(10),
+  year INT,
+  PRIMARY KEY (instructor_id, course_code, sec_id, semester, year),
+  FOREIGN KEY (instructor_id) REFERENCES instructors(instructor_id),
+  FOREIGN KEY (course_code, sec_id, semester, year) REFERENCES sections(course_code, sec_id, semester, year)
+);
+
+-- Table for Takes (Student-course enrollment in sections)
+CREATE TABLE takes (
+  student_id VARCHAR(100),
+  course_code VARCHAR(100),
+  sec_id INT,
+  semester VARCHAR(10),
+  year INT,
+  PRIMARY KEY (student_id, course_code, sec_id, semester, year),
+  FOREIGN KEY (student_id) REFERENCES students(student_id),
+  FOREIGN KEY (course_code, sec_id, semester, year) REFERENCES sections(course_code, sec_id, semester, year)
+);
+CREATE TABLE advisors (
+  advisor_id INT AUTO_INCREMENT PRIMARY KEY,
+  advisor_name VARCHAR(100) NOT NULL,
+  department_id INT NOT NULL,
+  FOREIGN KEY (department_id) REFERENCES departments(department_id)
+);
+INSERT INTO departments (department_id, department_name) VALUES
+(1, 'Computer Science'),
+(2, 'Electrical Engineering'),
+(3, 'Mechanical Engineering'),
+(4, 'Civil Engineering'),
+(5, 'Mathematics');
+
+INSERT INTO instructors (instructor_id, instructor_name, department_id) VALUES
+(101, 'Dr. Alice Johnson', 1),
+(102, 'Dr. Bob Smith', 1),
+(103, 'Dr. Carol Lee', 2),
+(104, 'Dr. David Brown', 3),
+(105, 'Dr. Emma Green', 4),
+(106, 'Dr. Frank White', 5);
+
+INSERT INTO students (student_id, student_name, email, department_id) VALUES
+('2022CSB1001', 'John Doe', 'johndoe@university.edu', 1),
+('2022CSB1002', 'Jane Smith', 'janesmith@university.edu', 1),
+('2022EEB1003', 'Emily Davis', 'emilydavis@university.edu', 2),
+('2022MEB1004', 'Michael Brown', 'michaelbrown@university.edu', 3),
+('2022CVB1005', 'Sarah Wilson', 'sarahwilson@university.edu', 4),
+('2022MAB1006', 'David Anderson', 'davidanderson@university.edu', 5);
+
+INSERT INTO courses (course_code, course_title, credits, department_id, session) VALUES
+('CS101', 'Introduction to Programming', 4, 1, '2024-Fall'),
+('CS201', 'Data Structures and Algorithms', 3, 1, '2024-Fall'),
+('EE101', 'Circuit Analysis', 3, 2, '2024-Fall'),
+('ME101', 'Thermodynamics', 4, 3, '2024-Fall'),
+('CV101', 'Structural Engineering', 3, 4, '2024-Fall'),
+('MA101', 'Linear Algebra', 4, 5, '2024-Fall');
+
+INSERT INTO sections (course_code, sec_id, semester, year)
+VALUES
+  ('CS101', 1, 'Fall', 2024),
+  ('CV101', 2, 'Spring', 2024),
+  ('ME101', 1, 'Fall', 2023),
+  ('EE101', 1, 'Winter', 2025),
+  ('MA101', 1, 'Summer', 2024);
+INSERT INTO sections (course_code, sec_id, semester, year)
+VALUES
+  ('CS201', 2, 'Fall', 2024);
+
+
+INSERT INTO teaches (instructor_id, course_code, sec_id, semester, year) VALUES
+(101, 'CS101', 1, 'Fall', 2024),
+(102, 'CS201', 2, 'Fall', 2024),
+(103, 'EE101', 1, 'Winter', 2025),
+(104, 'ME101', 1, 'Fall', 2023),
+(105, 'CV101', 2, 'Spring', 2024),
+(106, 'MA101', 1, 'Summer', 2024);
+
+
+INSERT INTO enrollments (student_id, course_code, sec_id, semester, year, status, request_date) VALUES
+('2022CSB1001', 'CS101', 1, 'Fall', 2024, 'Pending Approval', CURRENT_TIMESTAMP),
+('2022CSB1002', 'CS201', 2, 'Fall', 2024, 'Pending Approval', CURRENT_TIMESTAMP);
+
+
+
+INSERT INTO takes (student_id, course_code, sec_id, semester, year) VALUES
+('2022CSB1001', 'CS101', 1, 'Fall', 2024),
+('2022CSB1002', 'CS201', 2, 'Fall', 2024),
+('2022EEB1003', 'EE101', 1, 'Winter', 2025),
+('2022MEB1004', 'ME101', 1, 'Fall', 2023),
+('2022CVB1005', 'CV101', 2, 'Spring', 2024),
+('2022MAB1006', 'MA101', 1, 'Summer', 2024);
+
+
+INSERT INTO advisors (advisor_id, advisor_name, department_id) VALUES
+(1, 'Dr. Alice Johnson', 1), -- Advisor for Computer Science
+(2, 'Dr. Carol Lee', 2),     -- Advisor for Electrical Engineering
+(3, 'Dr. David Brown', 3),   -- Advisor for Mechanical Engineering
+(4, 'Dr. Emma Green', 4),    -- Advisor for Civil Engineering
+(5, 'Dr. Frank White', 5);   -- Advisor for Mathematics
+
 use aims_db;
-select * from coursescoursescoursesdepartments
-
-select * from enrollments
-
+select * from students
+;
+INSERT INTO enrollments (student_id, course_code, sec_id, semester, year, status, request_date) VALUES
+('2022CSB1002', 'CS101', 1, 'Fall', 2024, 'Pending Approval', CURRENT_TIMESTAMP)
